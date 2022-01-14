@@ -2,5 +2,7 @@
 __pycache__
 test.py
 pretrained_models
-data2
-data
+DBP15k
+networks
+PascalVOC
+data.zip

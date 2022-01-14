@@ -161,14 +161,15 @@ def run_dbp15k(args):
     cand_ents0 = dataset.cand_ents0.to(args.device)
     cand_ents1 = dataset.cand_ents1.to(args.device)
 
-    syn_feats0 = feats0.clone().detach()
-    syn_feats1 = feats1.clone().detach()
-
-    ## set seed nodes to have same features
-    syn_feats1[train_seeds[:, 1]] = feats0[train_seeds[:, 0]]
-    syn_feats0[train_seeds[:, 0]] = feats1[train_seeds[:, 1]]
-
     start = time.time()
+    if args.use_supervision:
+        syn_feats0 = feats0.clone().detach()
+        syn_feats1 = feats1.clone().detach()
+
+        ## set seed nodes to have same features
+        syn_feats1[train_seeds[:, 1]] = feats0[train_seeds[:, 0]]
+        syn_feats0[train_seeds[:, 0]] = feats1[train_seeds[:, 1]]
+    
     ## initialize model
     rand_gnn = GraphSAGE(in_dim, args.dim, args.num_layer, args.act_func, use_node_feature=True, weight_free=args.weight_free, bias=False)
     rand_gnn.eval()
@@ -207,8 +208,9 @@ def run_dbp15k(args):
         torch.cuda.empty_cache()
         pfm = evaluate(S, test_seeds, cand_ents0, cand_ents1, print_info=False)
 
-    print('Inference costs', time.time() - start, 'seconds.')
-    return pfm
+    time_spend = time.time() - start
+    print('Inference costs', time_spend, 'seconds.')
+    return pfm, time_spend
 
 if __name__ == '__main__':
     '''Select dataset'''
@@ -228,8 +230,8 @@ if __name__ == '__main__':
     args = parser.parse_args()
     args.act_func = act_func_dict[args.act_func]
     args.device = 'cuda:%d' % (args.gpu_id)
-    # run_dbp15k(args)
-    # exit()
+    run_dbp15k(args)
+    exit()
     pfms = []
     for data in ['zh_en', 'ja_en', 'fr_en']:
         args.dataset = data

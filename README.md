@@ -33,3 +33,13 @@ PascalVOC will be downloaded automatically when running codes.
 >> python ppi.py --dataset extra_edge --use_dgmc --num_steps 100  --weight_free --rnd_dim 128 --gpu_id 0
 ```
 
+## Reference
+
+```bib
+@article{liu2022training,
+  title={Training Free Graph Neural Networks for Graph Matching},
+  author={Liu, Zhiyuan and Cao, Yixin and Feng, Fuli and Wang, Xiang and Shang, Xindi and Tang, Jie and Kawaguchi, Kenji and Chua, Tat-Seng},
+  journal={arXiv preprint},
+  year={2022}
+}
+```

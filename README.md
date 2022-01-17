@@ -1,11 +1,11 @@
 # README
 
-This is the code for paper *Training Free Graph Neural Networks for Graph Matching*. arXiv preprint.
+This is the code for paper *[Training Free Graph Neural Networks for Graph Matching](https://arxiv.org/pdf/2201.05349.pdf)*. arXiv preprint.
 
 ## Dependencies
 
 1. PyTorch
-2. [Pytorh Geometric](https://github.com/rusty1s/pytorch_geometric) 1.7.0
+2. [Pytorch Geometric](https://github.com/rusty1s/pytorch_geometric) 1.7.0
 
 ## Datasets
 
@@ -15,7 +15,7 @@ PascalVOC will be downloaded automatically when running codes.
 
 ## Reproduce results in paper
 
-**Pascal**
+**PascalVOC**
 
 ```bash
 >> python pascal.py --use_splinecnn --use_knn --use_dgmc --gpu_id 0
@@ -41,7 +41,7 @@ If you use our code, please cite our paper
 @article{liu2022training,
   title={Training Free Graph Neural Networks for Graph Matching},
   author={Liu, Zhiyuan and Cao, Yixin and Feng, Fuli and Wang, Xiang and Shang, Xindi and Tang, Jie and Kawaguchi, Kenji and Chua, Tat-Seng},
-  journal={arXiv preprint},
+  journal={arXiv preprint arXiv:2201.05349},
   year={2022}
 }
 ```

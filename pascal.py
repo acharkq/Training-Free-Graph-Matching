@@ -337,8 +337,8 @@ if __name__ == '__main__':
     parser.add_argument('--dgmc_layer', type=int, default=1)
     parser.add_argument('--num_steps', type=int, default=20)
     parser.add_argument('--act_func', type=str, default='identity')
-    parser.add_argument('--use_splinecnn', action='store_true')
-    parser.add_argument('--use_knn', action='store_true')
+    parser.add_argument('--use_splinecnn', action='store_true', help='Use SplineCNN as the backbone GNN? The default backbone is GraphSAGE.')
+    parser.add_argument('--use_knn', action='store_true', help='Use kNN search to utilize annotation without training?')
     parser.add_argument('--use_dgmc', action='store_true')
     args = parser.parse_args()
     args.device = 'cuda:%d' % args.gpu_id

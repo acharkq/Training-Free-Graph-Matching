@@ -312,7 +312,7 @@ def run_for_noise(args, noise_ratio, timer=False):
 if __name__ == '__main__':
     # run_for_real_data('meso-syne')
     parser = argparse.ArgumentParser()
-    parser.add_argument('--dataset', type=str, default='extra_edge')
+    parser.add_argument('--dataset', type=str, default='extra_edge', help='The dataset use for evaluation. Options: rewirement (Random Rewirement), extra_edge (Low Confidence Edge)')
     parser.add_argument('--h_dim', type=int, default=512)
     parser.add_argument('--rnd_dim', type=int, default=512)
     parser.add_argument('--num_layer', type=int, default=10)

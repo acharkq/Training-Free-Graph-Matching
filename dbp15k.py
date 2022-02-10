@@ -215,7 +215,7 @@ def run_dbp15k(args):
 if __name__ == '__main__':
     '''Select dataset'''
     parser = argparse.ArgumentParser()
-    parser.add_argument('--dataset', type=str, default='zh_en')
+    parser.add_argument('--dataset', type=str, default='zh_en', help='The dataset used for evaluation. Options: zh_en (Chinese-English), ja_en (Japanese-English), fr_en (French-English)')
     parser.add_argument('--gpu_id', type=int, default=0)
     parser.add_argument('--dim', type=int, default=256)
     parser.add_argument('--rnd_dim', type=int, default=256)

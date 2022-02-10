@@ -13,7 +13,7 @@ Download the DBP15k and the PPI dataset from this [Onedrive Link](https://1drv.m
 
 PascalVOC will be downloaded automatically when running codes.
 
-## Reproduce results in paper
+## Reproduce Results in Paper
 
 **PascalVOC**
 
@@ -24,13 +24,16 @@ PascalVOC will be downloaded automatically when running codes.
 **DBP15k**
 
 ```bash
->> python dbp15k.py --dataset zh_en --use_dgmc --use_supervision --weight_free --gpu_id 0
+>> python dbp15k.py --dataset zh_en --use_dgmc --use_supervision --weight_free --gpu_id 0 ## Chinese-English KG pair
+>> python dbp15k.py --dataset ja_en --use_dgmc --use_supervision --weight_free --gpu_id 0 ## Japanese-English KG pair
+>> python dbp15k.py --dataset fr_en --use_dgmc --use_supervision --weight_free --gpu_id 0 ## French-English KG pair
 ```
     
 **PPI**
 
 ```bash
->> python ppi.py --dataset extra_edge --use_dgmc --num_steps 100  --weight_free --rnd_dim 128 --gpu_id 0
+>> python ppi.py --dataset extra_edge --use_dgmc --num_steps 100  --weight_free --rnd_dim 128 --gpu_id 0  ## Low-Conf Edge dataset
+>> python ppi.py --dataset rewirement --use_dgmc --num_steps 100  --weight_free --rnd_dim 128 --gpu_id 0  ## Random Rewirement dataset
 ```
 
 ## Reference

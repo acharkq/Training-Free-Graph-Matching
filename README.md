@@ -2,6 +2,10 @@
 
 This is the code for paper *[Training Free Graph Neural Networks for Graph Matching](https://arxiv.org/pdf/2201.05349.pdf)*. arXiv preprint.
 
+## Description
+
+**T**raining **F**ree **G**raph **M**atching (**TFGM**) is a framework to boost the performance of GNNs for graph matching without training. This github repository contains our exemplar implementations of TFGM with the popular [GraphSAGE](https://github.com/williamleif/GraphSAGE), [SplineCNN](https://github.com/rusty1s/pytorch_spline_conv), and [DGMC](https://github.com/rusty1s/deep-graph-matching-consensus). The idea is easy to implement and you can also try TFGM with other GNNs.
+
 ## Dependencies
 
 1. PyTorch
@@ -35,6 +39,8 @@ PascalVOC will be downloaded automatically when running codes.
 >> python ppi.py --dataset extra_edge --use_dgmc --num_steps 100  --weight_free --rnd_dim 128 --gpu_id 0  ## Low-Conf Edge dataset
 >> python ppi.py --dataset rewirement --use_dgmc --num_steps 100  --weight_free --rnd_dim 128 --gpu_id 0  ## Random Rewirement dataset
 ```
+
+If you have any questions regarding running the code, please feel free to raise a github issue.
 
 ## Reference
 

@@ -49,7 +49,7 @@ If you use our code, please cite our paper
 ```bib
 @article{liu2022training,
   title={Training Free Graph Neural Networks for Graph Matching},
-  author={Liu, Zhiyuan and Cao, Yixin and Feng, Fuli and Wang, Xiang and Shang, Xindi and Tang, Jie and Kawaguchi, Kenji and Chua, Tat-Seng},
+  author={Liu, Zhiyuan and Cao, Yixin and Feng, Fuli and Wang, Xiang and Tang, Jie and Kawaguchi, Kenji and Chua, Tat-Seng},
   journal={arXiv preprint arXiv:2201.05349},
   year={2022}
 }

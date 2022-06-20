@@ -201,6 +201,51 @@ class RandDGMC(nn.Module):
         return S
 
 
+    def sp_forward(self, S_hat, knn_idx0, edges_s, edges_t, N0, N1):
+        '''
+        RandDGMC for two graphs, a sparse implementation
+        '''
+        device = S_hat.device
+        rnd_dim = self.rnd_dim
+        
+        # Scaling, so that the initial assignment is as important as the refinement phase
+        S_hat *= self.num_steps
+        S = F.softmax(S_hat, dim=1)
+        
+        # cache the edges
+        h = torch.arange(N0, device=device).reshape(-1, 1).expand(N0, knn_idx0.shape[-1])
+        edges = torch.stack((h, knn_idx0), dim=-1)
+        edges = edges.reshape(-1, 2).T
+        if self.weight_free:
+            eye = torch.eye(N0, device=device) 
+        
+        '''refinement: a sparse implementation'''
+        for _ in range(self.num_steps):
+            '''construct sparse matrix for multiplication'''
+            sp_s_hat = torch.sparse.FloatTensor(edges, S.flatten(), size=(N0, N1))
+            if self.weight_free:
+                r_s = eye
+            else:
+                r_s = torch.randn((N0, rnd_dim), device=device)  # shape [N0, rnd_dim]
+            r_t = torch.sparse.mm(sp_s_hat.transpose(0, 1), r_s)  # shape [N1, rnd_dim]
+            o_s = self.psi_2(r_s, edges_s)  # shape [N0, rnd_dim]
+            o_t = self.psi_2(r_t, edges_t)  # shape [N1, rnd_dim]
+            o_s = F.normalize(o_s, dim=-1, p=2)
+            o_t = F.normalize(o_t, dim=-1, p=2)
+            o_s = o_s.unsqueeze(-2)  # shape [N0, 1, rnd_dim]
+            o_t = o_t[knn_idx0]  # shape [N0, nega_num + 1, rnd_dim]
+            sim = torch.bmm(o_t, o_s.transpose(-1, -2)).squeeze(-1)
+            S_hat = S_hat + sim
+            S = F.softmax(S_hat, dim=1)
+            
+            with torch.cuda.device(device):
+                del sim, o_t, o_s
+                torch.cuda.empty_cache()
+
+        S = torch.sparse.FloatTensor(edges, S.flatten(), size=(N0, N1))
+        return S
+
+
 class Linear(nn.Module):
     '''
     My implemented Linear layer
@@ -349,24 +394,66 @@ class GraphSAGE(nn.Module):
             else:
                 self.layers.append(SAGELayer(hid_dim, hid_dim, weight_free=weight_free, bias=bias))
         self.use_node_feature = use_node_feature
+        self.basic_tfgm = False
     
     def reset_parameters(self):
         for layer in self.layers:
             layer.reset_parameters()
 
     def forward(self, feats_n, edges, edge_attr=None):
-        if self.use_node_feature:
+        if self.basic_tfgm:
             feats_n_list = [F.normalize(feats_n, p=2, dim=-1)]
+            for gnn in self.layers:
+                feats_n = gnn(feats_n, edges) # shape = [\sum_i N_{g_i}, D]
+                feats_n = F.normalize(feats_n, dim=-1, p=2)
+                feats_n += feats_n_list[-1]
+                feats_n_list.append(feats_n)
+                feats_n = self.act_func(feats_n)
+            return feats_n_list[-1]
         else:
-            feats_n_list = []
-        for gnn in self.layers:
-            feats_n = gnn(feats_n, edges) # shape = [\sum_i N_{g_i}, D]
-            feats_n = F.normalize(feats_n, dim=-1, p=2)
-            feats_n_list.append(feats_n)
-            feats_n = self.act_func(feats_n)
+            if self.use_node_feature:
+                feats_n_list = [F.normalize(feats_n, p=2, dim=-1)]
+            else:
+                feats_n_list = []
+            for gnn in self.layers:
+                feats_n = gnn(feats_n, edges) # shape = [\sum_i N_{g_i}, D]
+                feats_n = F.normalize(feats_n, dim=-1, p=2)
+                feats_n_list.append(feats_n)
+                feats_n = self.act_func(feats_n)
 
-        feats_n = torch.cat(feats_n_list,dim=-1)
-        return feats_n
+            feats_n = torch.cat(feats_n_list,dim=-1)
+            return feats_n
+    
+    def pair_forward(self, feats_n0, edges0, feats_n1, edges1, seeds):
+        '''
+        seeds: shape = [S, 2]
+        '''
+        feats_n1[seeds[:, 1]] = feats_n0[seeds[:, 0]]
+
+        if self.use_node_feature:
+            feats_n_list0 = [F.normalize(feats_n0, p=2, dim=-1)]
+            feats_n_list1 = [F.normalize(feats_n1, p=2, dim=-1)]
+        else:
+            feats_n_list0 = []
+            feats_n_list1 = []
+        
+        for gnn in self.layers:
+            feats_n0 = gnn(feats_n0, edges0) # shape = [\sum_i N_{g_i}, D]
+            feats_n1 = gnn(feats_n1, edges1) # shape = [\sum_i N_{g_i}, D]    
+            
+            feats_n1[seeds[:, 1]] = feats_n0[seeds[:, 0]]
+
+            feats_n0 = F.normalize(feats_n0, dim=-1, p=2)
+            feats_n_list0.append(feats_n0)
+            feats_n0 = self.act_func(feats_n0)
+            feats_n1 = F.normalize(feats_n1, dim=-1, p=2)
+            feats_n_list1.append(feats_n1)
+            feats_n1 = self.act_func(feats_n1)
+
+        feats_n0 = torch.cat(feats_n_list0, dim=-1)
+        feats_n1 = torch.cat(feats_n_list1, dim=-1)
+        return feats_n0, feats_n1
+        
 
 class GIN(nn.Module):
     def __init__(self, dim_n, hid_dim, num_layer, use_node_feature=True):

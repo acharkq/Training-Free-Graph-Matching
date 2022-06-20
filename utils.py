@@ -24,6 +24,7 @@ class Performance(namedtuple('Performance', ['top_x0', 'mr0', 'mrr0', 'top_x1', 
         print_time_info('SR-TG: HT@1 HT@10 MRR')
         print_time_info('SR-TG: %.2f %.2f %.4f' % (self.top_x0[0], self.top_x0[1], self.mrr0))# self.top_x1[0], self.top_x1[1], self.mrr1))
 
+@torch.no_grad()
 def evaluate(S, seeds, cands0, cands1, print_info=True, top_k=(1, 10)):
     def _get_hits(S, gt, top_k):
         '''

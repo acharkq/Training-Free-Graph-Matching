@@ -6,3 +6,8 @@ DBP15k
 networks
 PascalVOC
 data.zip
+figures
+test*
+figure*
+train*
+DWY100k

@@ -28,9 +28,9 @@ PascalVOC will be downloaded automatically when running codes.
 **DBP15k**
 
 ```bash
->> python dbp15k.py --dataset zh_en --use_dgmc --use_supervision --weight_free --gpu_id 0 ## Chinese-English KG pair
->> python dbp15k.py --dataset ja_en --use_dgmc --use_supervision --weight_free --gpu_id 0 ## Japanese-English KG pair
->> python dbp15k.py --dataset fr_en --use_dgmc --use_supervision --weight_free --gpu_id 0 ## French-English KG pair
+>> python dbp15k.py --dataset zh_en --use_char_embedding --use_dgmc --symmetric_align --use_supervision --weight_free --gpu_id 0 ## Chinese-English KG pair
+>> python dbp15k.py --dataset ja_en --use_char_embedding --use_dgmc --symmetric_align --use_supervision --weight_free --gpu_id 0 ## Japanese-English KG pair
+>> python dbp15k.py --dataset fr_en --use_char_embedding --use_dgmc --symmetric_align --use_supervision --weight_free --gpu_id 0 ## French-English KG pair
 ```
     
 **PPI**

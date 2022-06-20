@@ -14,7 +14,7 @@ from models import SplineCNN, GraphSAGE, RandDGMC, split_sim_batches, act_func_d
 from utils import timeit, cosine_similarity_nbyn, set_random_seed
 from torch_geometric.utils import to_dense_batch
 import torch.nn.functional as F
-
+from scipy.optimize import linear_sum_assignment
 
 class KNN(object):
     def __init__(self, k):
@@ -267,6 +267,49 @@ def run_pascal(args, psi_1, dgmc, test_graphs):
 
 
 @torch.no_grad()
+def run_pascal_node_match(args, test_graphs):
+    test_n2g_ids, test_feat_nodes, test_feat_edges, test_edges, test_y, test_g_pos = pack_graphs(test_graphs, args.device)
+    # sr_test_embed = psi_1(test_feat_nodes, test_edges, test_feat_edges)
+    test_feat_nodes = F.normalize(test_feat_nodes, dim=-1)
+
+    sample_dataset = ValidPairDataset(test_graphs, test_graphs, sample=True)
+    test_loader = DataLoader(sample_dataset, len(sample_dataset), shuffle=False, collate_fn=Collater())
+
+    correct = 0
+    num_examples = 0
+    while (num_examples < args.test_samples):
+        '''
+        the batch size is set to be the size of the dataset, so there is only one batch
+        '''
+        i = -1
+        tg_g_ids = None
+        for i, data in enumerate(test_loader):
+            tg_g_ids, y = data  # shape = [batch_size], shape = [sr_test_sum_nodes]
+        assert i == 0
+        tg_g_ids = tg_g_ids.tolist()
+        
+        tg_test_n2g_ids, tg_test_embed, tg_test_feat_edges, tg_test_edges, _, _ = extract_graphs(tg_g_ids, test_g_pos, test_feat_nodes, test_graphs, args.device)
+
+        h_s, s_mask = to_dense_batch(test_feat_nodes, test_n2g_ids, fill_value=0) # shape = [B, N_s, C_out]; shape = [B, N_s]
+        h_t, _ = to_dense_batch(tg_test_embed, tg_test_n2g_ids, fill_value=0) # shape = [B, N_t, C_out]; shape = [B, N_t]
+        S_hat = h_s @ h_t.transpose(-1, -2)  # [B, N_s, N_t]
+
+        for i in range(S_hat.shape[0]):
+            row_ind, col_ind = linear_sum_assignment(-S_hat[i].cpu().numpy())
+            row_ind, col_ind = torch.from_numpy(row_ind), torch.from_numpy(col_ind)
+            S_hat[i, row_ind, col_ind] += 1000
+
+        S = S_hat[s_mask]
+        
+        
+        y = generate_y(y, args.device)
+        correct += acc(S, y, reduction='sum')   
+        num_examples += y.size(1)
+        if num_examples >= args.test_samples:
+            return correct / num_examples
+
+
+@torch.no_grad()
 def run_pascal_with_knn(args, psi_1, dgmc, train_graphs, test_graphs):
     _, train_feat_nodes, train_feat_edges, train_edges, train_y, train_g_pos = pack_graphs(train_graphs, args.device)
     test_n2g_ids, test_feat_nodes, test_feat_edges, test_edges, test_y, test_g_pos = pack_graphs(test_graphs, args.device)
@@ -340,6 +383,7 @@ if __name__ == '__main__':
     parser.add_argument('--use_splinecnn', action='store_true', help='Use SplineCNN as the backbone GNN? The default backbone is GraphSAGE.')
     parser.add_argument('--use_knn', action='store_true', help='Use kNN search to utilize annotation without training?')
     parser.add_argument('--use_dgmc', action='store_true')
+    parser.add_argument('--use_node_match', action='store_true')
     args = parser.parse_args()
     args.device = 'cuda:%d' % args.gpu_id
     args.act_func = act_func_dict[args.act_func]
@@ -388,7 +432,9 @@ if __name__ == '__main__':
     dgmc.eval()
 
     start_time = time.time()
-    if args.use_knn:
+    if args.use_node_match:
+        accs = [100 * run_pascal_node_match(args, test_set) for test_set in test_datasets]
+    elif args.use_knn:
         accs = [100 * run_pascal_with_knn(args, psi_1, dgmc, train_set, test_set) for train_set, test_set in zip(train_datasets, test_datasets)]
     else:
         accs = [100 * run_pascal(args, psi_1, dgmc, test_set) for test_set in test_datasets]

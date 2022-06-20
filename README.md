@@ -13,7 +13,7 @@ This is the code for paper *[Training Free Graph Neural Networks for Graph Match
 
 ## Datasets
 
-Download the DBP15k and the PPI dataset from this [Onedrive Link](https://1drv.ms/u/s!AuQRz5abAH5T7mW2VuUCVsUJW-hd?e=nRn2T5). Unzip the file in the `data` folder.
+Download the DBP15k, the DWY100k and the PPI dataset from this [Onedrive Link](https://1drv.ms/u/s!AuQRz5abAH5T-EZ8cyIk5XfeKWCO?e=MXARdq). Unzip the file in the `data` folder.
 
 PascalVOC will be downloaded automatically when running codes.
 
